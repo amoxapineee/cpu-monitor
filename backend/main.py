@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
@@ -25,6 +26,17 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="CPU monitoring", lifespan=lifespan)
+
+# Прослойка для разрешения кросс-доменных запросов при разработке
+# Фронт (react) - http://localhost:5173/
+# Бэк (python) - http://localhost:8000/
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins="http://localhost:5173",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class CPUMetricResponse(BaseModel):
