@@ -13,12 +13,12 @@ export const App = () => {
       <Box>
         <CPUChart
           title="Мгновенная нагрузка"
-          endpoint="cpu/instant"
+          endpoint="instant"
           updateInterval={5000}
         />
         <CPUChart
           title="Усредненная нагрузка"
-          endpoint="cpu/average"
+          endpoint="average"
           updateInterval={60000}
         />
       </Box>

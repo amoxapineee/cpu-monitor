@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import type { DataPoint, Endpoint } from "../types";
-import { fetchCPUData } from "../api";
+import type { DataPoint, CPULoadParameter } from "../types";
+import { fetchCPULoad } from "../api";
 
 interface UseCPUDataResult {
   data: DataPoint[];
@@ -9,7 +9,7 @@ interface UseCPUDataResult {
 }
 
 export const useCPUData = (
-  endpoint: Endpoint,
+  endpoint: CPULoadParameter,
   updateInterval: number = 5000,
 ): UseCPUDataResult => {
   const [data, setData] = useState<DataPoint[]>([]);
@@ -18,7 +18,7 @@ export const useCPUData = (
 
   const fetchData = useCallback(async () => {
     try {
-      const result = await fetchCPUData(endpoint);
+      const result = await fetchCPULoad(endpoint);
       setData(result);
       setError(null);
     } catch (err) {

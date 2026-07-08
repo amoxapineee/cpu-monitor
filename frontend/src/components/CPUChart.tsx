@@ -1,12 +1,12 @@
 import { Box, Skeleton, Typography } from "@mui/material";
 import { useCPUData } from "../hooks/useCPUData";
-import type { Endpoint } from "../types";
+import type { CPULoadParameter } from "../types";
 import { ErrorMessage } from "./ErrorMessage";
 import { LineChart } from "@mui/x-charts";
 
 interface CPUChartProps {
   title: string;
-  endpoint: Endpoint;
+  endpoint: CPULoadParameter;
   updateInterval?: number;
 }
 

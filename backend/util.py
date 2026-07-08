@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from backend.schemas import CPUMetricResponse
+
 
 def floor_datetime(dt: datetime, divider) -> datetime:
     seconds = dt.second
@@ -14,10 +16,10 @@ def build_series(
     current = start_time
     while current < end_time:
         series.append(
-            {
-                "timestamp": current.isoformat(),
-                "value": data_dict.get(current.isoformat()),
-            }
+            CPUMetricResponse(
+                timestamp=current.isoformat(),
+                value=data_dict.get(current.isoformat()),
+            )
         )
         current += interval
     return series

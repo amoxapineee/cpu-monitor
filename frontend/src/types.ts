@@ -3,4 +3,4 @@ export interface DataPoint {
   value: number | null;
 }
 
-export type Endpoint = "cpu/instant" | "cpu/average";
+export type CPULoadParameter = "instant" | "average";
