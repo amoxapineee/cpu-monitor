@@ -1,13 +1,24 @@
-import type { DataPoint, CPULoadParameter } from "./types";
+import axios from "axios";
+import type { DataPoint, CPULoadParameter, CPUStatistic } from "./types";
 
-const API_BASE = "http://localhost:8000/api";
+const api = axios.create({
+  baseURL: "http://localhost:8000/api",
+});
 
 export const fetchCPULoad = async (
-  endpoint: CPULoadParameter,
+  type: CPULoadParameter,
 ): Promise<DataPoint[]> => {
-  const response = await fetch(`${API_BASE}/cpu/load?type=${endpoint}`);
-  if (!response.ok) {
-    throw new Error(`HTTP error: ${response.status}`);
-  }
-  return response.json();
+  const { data } = await api.get("/cpu/load", { params: { type } });
+  return data;
+};
+
+export const fetchCPUStats = async (
+  threshold: number,
+): Promise<CPUStatistic> => {
+  const { data } = await api.get("/cpu/stats", { params: { threshold } });
+  return data;
+};
+
+export const clearDB = async (): Promise<void> => {
+  await api.delete("/db/clear");
 };

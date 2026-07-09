@@ -6,7 +6,7 @@ from backend.schemas import CPUMetricResponse
 def floor_datetime(dt: datetime, divider) -> datetime:
     seconds = dt.second
     remainder = seconds % divider
-    return dt.replace(second=seconds - remainder, microsecond=0)
+    return dt.replace(second=seconds - remainder, microsecond=0, tzinfo=None)
 
 
 def build_series(

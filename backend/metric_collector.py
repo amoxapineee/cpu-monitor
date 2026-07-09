@@ -1,5 +1,5 @@
 from asyncio import to_thread
-from datetime import datetime
+from datetime import UTC, datetime
 
 from psutil import cpu_percent
 
@@ -11,7 +11,7 @@ async def collect_cpu_metrics():
     while True:
         try:
             load_percent = await to_thread(cpu_percent, 5)
-            timestamp = floor_datetime(datetime.now(), 5).isoformat()
+            timestamp = floor_datetime(datetime.now(UTC), 5).isoformat()
 
             db = SessionLocal()
 

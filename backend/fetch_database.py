@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from statistics import mean, median
 
 from sqlalchemy.orm import Session
@@ -10,7 +10,7 @@ from backend.util import build_series, floor_datetime
 
 
 def get_cpu_instant(db: Session):
-    current_time = floor_datetime(datetime.now(), 5)
+    current_time = floor_datetime(datetime.now(UTC), 5)
     hour_ago = current_time - timedelta(hours=1)
 
     query = db.query(CPUMetric).filter(CPUMetric.timestamp > hour_ago.isoformat()).all()
@@ -25,7 +25,7 @@ def get_cpu_instant(db: Session):
 
 
 def get_cpu_average(db: Session):
-    current_time = floor_datetime(datetime.now(), 60)
+    current_time = floor_datetime(datetime.now(UTC), 60)
     hour_ago = current_time - timedelta(hours=1)
 
     query = (
@@ -48,7 +48,7 @@ def get_cpu_average(db: Session):
 
 
 def get_cpu_load_stats(db: Session, treshold: float = 80):
-    current_time = floor_datetime(datetime.now(), 60)
+    current_time = floor_datetime(datetime.now(UTC), 60)
     hour_ago = current_time - timedelta(hours=1)
 
     query = (
@@ -71,6 +71,6 @@ def get_cpu_load_stats(db: Session, treshold: float = 80):
         min_load=min(values),
         max_load=max(values),
         avg_load=round(mean(values), 2),
-        median_load=median(values),
+        median_load=round(median(values), 2),
         seconds_above_threshold=sum(5 for value in values if value > treshold),
     )

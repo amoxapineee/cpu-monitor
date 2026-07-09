@@ -8,31 +8,57 @@ interface CPUChartProps {
   title: string;
   endpoint: CPULoadParameter;
   updateInterval?: number;
+  threshold?: number;
 }
 
 export const CPUChart = ({
   title,
   endpoint,
   updateInterval,
+  threshold,
 }: CPUChartProps) => {
-  const { data, loading, error } = useCPUData(endpoint, updateInterval);
+  const { data, isLoading, isError, error } = useCPUData(
+    endpoint,
+    updateInterval,
+  );
 
-  if (loading) {
+  if (isLoading) {
     return <Skeleton />;
   }
-  if (error) {
-    return <ErrorMessage message="Ошибка загрузки данных" />;
+  if (isError) {
+    return (
+      <ErrorMessage
+        message={
+          error instanceof Error ? error.message : "Ошибка загрузки данных"
+        }
+      />
+    );
   }
 
   const timestamps = data.map((d) => new Date(d.timestamp));
   const values = data.map((d) => d.value);
 
+  const filteredValues = values.filter((value) => value !== null);
+  if (
+    !filteredValues.some((value) => value <= threshold) ||
+    !filteredValues.some((value) => value >= threshold)
+  ) {
+    threshold = null;
+  }
+
   return (
-    <Box sx={{ border: 2, borderRadius: 4, my: 1, py: 1 }}>
+    <Box sx={{ border: 2, borderRadius: 4, py: 1 }}>
       <Typography sx={{ pl: 14 }}>{title}</Typography>
       <LineChart
         xAxis={[{ data: timestamps, scaleType: "time" }]}
-        series={[{ data: values, color: "#444444" }]}
+        series={[
+          { label: "Нагрузка, %", data: values, color: "#444444" },
+          {
+            label: "Порог",
+            data: timestamps.map(() => threshold),
+            color: "#FF0000",
+          },
+        ]}
         height={400}
         grid={{ vertical: true, horizontal: true }}
       />

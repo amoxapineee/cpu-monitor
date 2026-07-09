@@ -1,10 +1,10 @@
 from asyncio import CancelledError, create_task
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta
 from enum import Enum
 
 from fastapi import Depends, FastAPI, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 from backend.clear_database import clear_db
@@ -42,13 +42,11 @@ app.add_middleware(
 
 
 @app.get("/")
-def root():
-    return {
-        "message": "cpu monitoring is running",
-        "cpu_load": 'GET /api/cpu/load[?type="instant|average"]',
-        "cpu_load_stats": "GET /api/cpu/stats",
-        "clear_db": 'DELETE /api/db/clear[?type="all|keep_last_hour"',
-    }
+def get_root():
+    """
+    Перенаправление на документацию /docs
+    """
+    return RedirectResponse("/docs")
 
 
 class CPULoadType(str, Enum):
@@ -60,6 +58,13 @@ class CPULoadType(str, Enum):
 def get_cpu_load(
     type: CPULoadType = CPULoadType.instant, db: Session = Depends(get_db)
 ):
+    """
+    Получить данные нагрузки процессора
+
+    Возвращает массив объектов с полями:\n
+        timestamp - строка, содержащая время в формате ISO8601\n
+        value - значение нагрузки в %\n
+    """
     handlers = {
         CPULoadType.instant: get_cpu_instant,
         CPULoadType.average: get_cpu_average,
@@ -69,22 +74,25 @@ def get_cpu_load(
 
 
 @app.get("/api/cpu/stats", response_model=CPUStatsResponse)
-def get_cpu_stats(treshold: float = 80, db: Session = Depends(get_db)):
-    return get_cpu_load_stats(db, treshold)
+def get_cpu_stats(threshold: float = 80, db: Session = Depends(get_db)):
+    """
+    Получить статистику о нагрузке процессора за последний час
 
-
-class DBClearMode(str, Enum):
-    all = "all"
-    keep_last_hour = "keep_last_hour"
+    Возвращает объект с полями:\n
+        min_load - минимальная нагрузка\n
+        max_load - максимальная нагрузка\n
+        avg_load - средняя нагрузка\n
+        median_load - медианная нагрузка (меньше подвержена выпадам, чем усредненная)\n
+        seconds_above_threshold - сколько секунд нагрузка превышала пороговое значение\n
+    """
+    return get_cpu_load_stats(db, threshold)
 
 
 @app.delete("/api/db/clear", status_code=status.HTTP_204_NO_CONTENT)
-def clear_database(
-    mode: DBClearMode = DBClearMode.keep_last_hour, db: Session = Depends(get_db)
-):
-    modes = {
-        DBClearMode.all: datetime.now(),
-        DBClearMode.keep_last_hour: datetime.now() - timedelta(hours=1),
-    }
+def clear_database(db: Session = Depends(get_db)):
+    """
+    Очистить базу данных
 
-    clear_db(db, modes[mode])
+    Удаляет из базы данных все записи позднее последнего часа
+    """
+    clear_db(db)
